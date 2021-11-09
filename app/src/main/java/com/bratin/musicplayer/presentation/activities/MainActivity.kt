@@ -1,11 +1,10 @@
 package com.bratin.musicplayer.presentation.activities
 
 import android.Manifest
-import android.content.Intent
+import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -25,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val songsViewModel: SongsViewModel by viewModels()
+    private lateinit var sharedPref: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,15 +32,19 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
+        sharedPref =
+            getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE)
+
         requestPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-                if (isGranted) showSongsList()
-                else showPermissionDeniedError()
+                when {
+                    isGranted -> showSongsList()
+                    shouldShowRequestPermissionRationale(fileReadPermission) -> {
+                        showRequestPermissionRationale()
+                    }
+                    else -> showPermissionDeniedError()
+                }
             }
-    }
-
-    override fun onResume() {
-        super.onResume()
         checkPermissionAndGetSongsIfPossible()
     }
 
@@ -55,18 +59,10 @@ class MainActivity : AppCompatActivity() {
                 showSongsList()
             }
             shouldShowRequestPermissionRationale(fileReadPermission) -> {
-                val alertDialogBuilder = AlertDialog.Builder(this)
-                alertDialogBuilder.setMessage(getString(R.string.permission_error))
-                alertDialogBuilder.setPositiveButton("Grant Permission") { _, _ ->
-                    requestPermissionLauncher.launch(fileReadPermission)
-                }
-                alertDialogBuilder.setNegativeButton("No, Exit App") { _, _ -> finish() }
-                val alertDialog = alertDialogBuilder.create()
-                alertDialog.show()
+                showRequestPermissionRationale()
             }
-            else -> {
-                requestPermissionLauncher.launch(fileReadPermission)
-            }
+            sharedPref.getBoolean("permission_req_shown", false) -> showPermissionDeniedError()
+            else ->  requestPermissionLauncher.launch(fileReadPermission)
         }
     }
 
@@ -81,13 +77,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun showPermissionDeniedError() {
         val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setCancelable(false)
         alertDialogBuilder.setMessage(getString(R.string.permission_error_settings))
-        alertDialogBuilder.setPositiveButton("Settings") { _, _ ->
-            val intent = Intent()
-            intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-            val uri = Uri.fromParts("package", packageName, null)
-            intent.data = uri
-            startActivity(intent)
+        alertDialogBuilder.setPositiveButton("Exit App") { _, _ -> finish() }
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
+    private fun showRequestPermissionRationale() {
+        sharedPref.edit().putBoolean("permission_req_shown", true).apply()
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setCancelable(false)
+        alertDialogBuilder.setMessage(getString(R.string.permission_error))
+        alertDialogBuilder.setPositiveButton("Grant Permission") { _, _ ->
+            requestPermissionLauncher.launch(fileReadPermission)
         }
         alertDialogBuilder.setNegativeButton("No, Exit App") { _, _ -> finish() }
         val alertDialog = alertDialogBuilder.create()
