@@ -15,12 +15,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <View
+    <com.bratin.musicplayer.presentation.views.MusicPlayerView
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:background="#345678"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"></View>
+        app:layout_constraintStart_toStartOf="parent">
+    </com.bratin.musicplayer.presentation.views.MusicPlayerView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
