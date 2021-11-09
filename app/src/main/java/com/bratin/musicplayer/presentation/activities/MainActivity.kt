@@ -46,6 +46,14 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         checkPermissionAndGetSongsIfPossible()
+
+        songsViewModel.getCurrentSong()
+            ?.let { binding.musicPlayer.setMusicData(it) }
+
+        binding.musicPlayer.onPlayBtnClicked = {
+            songsViewModel.playPauseMusic(this)
+            binding.musicPlayer.updateMusicUI(songsViewModel.isPlaying())
+        }
     }
 
     /**
@@ -62,7 +70,7 @@ class MainActivity : AppCompatActivity() {
                 showRequestPermissionRationale()
             }
             sharedPref.getBoolean("permission_req_shown", false) -> showPermissionDeniedError()
-            else ->  requestPermissionLauncher.launch(fileReadPermission)
+            else -> requestPermissionLauncher.launch(fileReadPermission)
         }
     }
 
@@ -72,7 +80,15 @@ class MainActivity : AppCompatActivity() {
             songsListAdapter.setList(songList)
             binding.rvMusicList.adapter = songsListAdapter
         }
+        songsViewModel.songProgress.observe(this) { timer ->
+            binding.musicPlayer.updateTime(timer)
+        }
         songsViewModel.getSongsList()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        songsViewModel.stopMusic()
     }
 
     private fun showPermissionDeniedError() {

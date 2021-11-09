@@ -4,7 +4,8 @@ import com.bratin.musicplayer.data.models.RawSongData
 import com.bratin.musicplayer.domain.models.SongData
 import javax.inject.Inject
 
-class SongsDataMapper @Inject constructor(): BaseMapper<ArrayList<RawSongData>, ArrayList<SongData>> {
+class SongsDataMapper @Inject constructor() :
+    BaseMapper<ArrayList<RawSongData>, ArrayList<SongData>> {
 
     override fun mapToEntityFromDto(data: ArrayList<RawSongData>): ArrayList<SongData> {
         val songsList = ArrayList<SongData>()
@@ -14,7 +15,8 @@ class SongsDataMapper @Inject constructor(): BaseMapper<ArrayList<RawSongData>, 
                     id = song.id,
                     title = song.title,
                     mediaUri = song.mediaUri,
-                    duration = song.duration
+                    duration = song.duration,
+                    durationMillis = song.durationMillis
                 )
             )
         }

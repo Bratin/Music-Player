@@ -36,7 +36,8 @@ fun scanSDCard(context: Context): ArrayList<RawSongData> {
                         uri,
                         cursor.getLong(0)
                     ),
-                    duration = formatTimeMillis(cursor.getLong(2))
+                    duration = formatTimeMillis(cursor.getLong(2)),
+                    durationMillis = cursor.getLong(2)
                 )
                 alMd.add(md)
             }
@@ -49,7 +50,7 @@ fun scanSDCard(context: Context): ArrayList<RawSongData> {
     return alMd
 }
 
-private fun formatTimeMillis(timeMillis: Long): String {
+fun formatTimeMillis(timeMillis: Long): String {
     val formattedTime: String = if (timeMillis < ONE_HR_IN_MILLIS) {
         String.format(
             Locale.getDefault(), "%01d:%02d",
